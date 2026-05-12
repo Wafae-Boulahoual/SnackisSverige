@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-using SnackisForumApplication.Models;
+using SnackisForumPresentation.Models;
 using System.Diagnostics;
 
-namespace SnackisForumApplication.Controllers
+namespace SnackisForumPresentation.Controllers
 {
     public class HomeController : Controller
     {

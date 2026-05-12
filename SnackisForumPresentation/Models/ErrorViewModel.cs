@@ -1,4 +1,4 @@
-namespace SnackisForumApplication.Models
+namespace SnackisForumPresentation.Models
 {
     public class ErrorViewModel
     {

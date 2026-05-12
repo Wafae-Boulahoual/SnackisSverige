@@ -3,7 +3,7 @@ using Infrastructure.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
-namespace SnackisForumApplication
+namespace SnackisForumPresentation
 {
     public class Program
     {
@@ -11,13 +11,12 @@ namespace SnackisForumApplication
         {
             var builder = WebApplication.CreateBuilder(args);
 
-
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")
             ?? throw new InvalidOperationException("Anslutning lyckades inte!")));
 
-            // 2. Identity med ApplicationUser och roles
-            builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = false)
+            builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
+                options.SignIn.RequireConfirmedAccount = false)
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
