@@ -47,6 +47,7 @@ namespace Infrastructure.Repositories
         {
             return await _context.Reports.FirstOrDefaultAsync(r => r.Id == id);
         }
+        
 
     }
 }

@@ -19,7 +19,7 @@ namespace Infrastructure.Repositories
         }
         public async Task AddAsync(SubCategory subCategory)
         {
-            await _context.AddAsync(subCategory);
+            await _context.SubCategories.AddAsync(subCategory);
             await _context.SaveChangesAsync();
         }
 
