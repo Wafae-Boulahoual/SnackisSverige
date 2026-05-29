@@ -26,7 +26,7 @@ namespace Application.Services
             await _commentRepository.DeleteAsync(id);
         }
 
-        public async Task<Comment> GetByIdAsync(int id)
+        public async Task<Comment?> GetByIdAsync(int id)
         {
             return await _commentRepository.GetByIdAsync(id);
         }

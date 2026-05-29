@@ -12,7 +12,7 @@ namespace Domain.Interfaces
         Task AddAsync(SubCategory subCategory);
         Task UpdateAsync(SubCategory subCategory);
         Task DeleteAsync(int id);
-        Task<SubCategory> GetByIdAsync(int id); //ska användas när man trycker på en subcategory
+        Task<SubCategory?> GetByIdAsync(int id); //ska användas när man trycker på en subcategory
         Task<List<SubCategory>> GetByCategoryIdAsync(int categoryId); // ska användas när man tycker på category
 
     }

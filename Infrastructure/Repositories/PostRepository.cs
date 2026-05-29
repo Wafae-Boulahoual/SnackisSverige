@@ -34,9 +34,13 @@ namespace Infrastructure.Repositories
         }
 
 
-        public async Task<Post> GetByIdAsync(int id)
+        public async Task<Post?> GetByIdAsync(int id)
         {
-            return await _context.Posts.FirstOrDefaultAsync(p => p.Id == id);
+            return await _context.Posts
+                .Include(p => p.User)
+                .Include(p => p.Comments)
+                .Include(p => p.SubCategory)
+                .FirstOrDefaultAsync(p => p.Id == id);
 
         }
 

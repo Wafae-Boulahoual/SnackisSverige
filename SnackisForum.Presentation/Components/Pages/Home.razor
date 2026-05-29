@@ -1,0 +1,21 @@
+﻿@page "/"
+@using Application.Interfaces
+@using Domain.Models
+@inject ICategoryServices CategoryService
+
+<PageTitle>Snackis</PageTitle>
+
+<h1>Välkommen till forumet!</h1>
+
+
+<h2>Kategorier </h2>
+
+@code{
+    private List<Category> Categories { get; set; } = new();
+    private SubCategory SubCategory { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Categories = await CategoryService.GetAllAsync();
+    }
+}

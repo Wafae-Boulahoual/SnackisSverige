@@ -13,6 +13,6 @@ namespace Domain.Interfaces
         Task UpdateAsync(Category category); // Update
         Task DeleteAsync(int id); //Delete
         Task<List<Category>> GetAllAsync(); // Read
-        Task<Category> GetByIdAsync(int id); //Read
+        Task<Category?> GetByIdAsync(int id); //Read
     }
 }

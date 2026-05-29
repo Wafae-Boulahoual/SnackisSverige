@@ -1,0 +1,6 @@
+@SnackisForum.API_HostAddress = http://localhost:5107
+
+GET {{SnackisForum.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

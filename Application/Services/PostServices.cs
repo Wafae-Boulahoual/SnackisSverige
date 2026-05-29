@@ -26,7 +26,7 @@ namespace Application.Services
             await _postRepository.DeleteAsync(id);
         }
 
-        public async Task<Post> GetByIdAsync(int id)
+        public async Task<Post?> GetByIdAsync(int id)
         {
             return await _postRepository.GetByIdAsync(id);
         }

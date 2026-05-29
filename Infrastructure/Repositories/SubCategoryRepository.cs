@@ -39,7 +39,7 @@ namespace Infrastructure.Repositories
                 .Where(s => s.CategoryId == categoryId).ToListAsync();
         }
 
-        public async Task<SubCategory> GetByIdAsync(int id)
+        public async Task<SubCategory?> GetByIdAsync(int id)
         {
             return await _context.SubCategories.FirstOrDefaultAsync(c => c.Id == id);
 

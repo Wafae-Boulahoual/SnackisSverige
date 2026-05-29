@@ -33,7 +33,7 @@ namespace Application.Services
             return await _categoryRepository.GetAllAsync();
         }
 
-        public async Task<Category> GetByIdAsync(int id)
+        public async Task<Category?> GetByIdAsync(int id)
         {
             return await _categoryRepository.GetByIdAsync(id);
         }

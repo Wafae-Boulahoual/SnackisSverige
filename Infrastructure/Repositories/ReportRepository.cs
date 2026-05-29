@@ -35,7 +35,11 @@ namespace Infrastructure.Repositories
 
         public async Task<List<Report>> GetAllAsync()
         {
-            return await _context.Reports.ToListAsync();
+            return await _context.Reports
+                        .Include(r => r.User)    
+                        .Include(r => r.Post)   
+                        .Include(r => r.Comment) 
+                        .ToListAsync();
         }
 
         public async Task UpdateAsync(Report report)
@@ -43,7 +47,7 @@ namespace Infrastructure.Repositories
             _context.Reports.Update(report);
             await _context.SaveChangesAsync();
         }
-        public async Task<Report> GetByIdAsync(int id)
+        public async Task<Report?> GetByIdAsync(int id)
         {
             return await _context.Reports.FirstOrDefaultAsync(r => r.Id == id);
         }

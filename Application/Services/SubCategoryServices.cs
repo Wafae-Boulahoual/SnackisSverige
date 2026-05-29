@@ -31,7 +31,7 @@ namespace Application.Services
             return await _subCategoryRepository.GetByCategoryIdAsync(categoryId);
         }
 
-        public async Task<SubCategory> GetByIdAsync(int id)
+        public async Task<SubCategory?> GetByIdAsync(int id)
         {
             return await _subCategoryRepository.GetByIdAsync(id);
         }

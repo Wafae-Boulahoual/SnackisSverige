@@ -31,7 +31,7 @@ namespace Application.Services
             return await _reportRepository.GetAllAsync();
         }
 
-        public async Task<Report> GetByIdAsync(int id)
+        public async Task<Report?> GetByIdAsync(int id)
         {
             return await _reportRepository.GetByIdAsync(id);
         }

@@ -12,7 +12,7 @@ namespace Application.Interfaces
         Task AddAsync(Report report);
         Task UpdateAsync(Report report); // uppdatera när admin läser den
         Task DeleteAsync(int id);
-        Task<Report> GetByIdAsync(int id); // för att kunna deleta den
+        Task<Report?> GetByIdAsync(int id); // för att kunna deleta den
         Task<List<Report>> GetAllAsync();
         Task MarkAsReviewedAsync(int id); // admin markerar rapporten som granskad
     }

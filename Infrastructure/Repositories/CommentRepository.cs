@@ -35,7 +35,7 @@ namespace Infrastructure.Repositories
             }
         }
 
-        public async Task<Comment> GetByIdAsync(int id)
+        public async Task<Comment?> GetByIdAsync(int id)
         {
             return await _context.Comments.FirstOrDefaultAsync(c => c.Id == id);
         }
@@ -43,7 +43,9 @@ namespace Infrastructure.Repositories
         public async Task<List<Comment>> GetByPostIdAsync(int id)
         {
             return await _context.Comments
-                .Where(p => p.PostId == id).ToListAsync();
+                .Include(c=>c.User)
+                .Where(p => p.PostId == id)
+                .ToListAsync();
         }
 
         public async Task UpdateAsync(Comment comment)

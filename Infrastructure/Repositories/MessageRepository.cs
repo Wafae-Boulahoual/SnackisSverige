@@ -33,21 +33,26 @@ namespace Infrastructure.Repositories
             }
         }
 
-        public async Task<Message> GetByIdAsync(int id)
+        public async Task<Message?> GetByIdAsync(int id)
         {
-            return await _context.Messages.FirstOrDefaultAsync(m => m.Id == id);
+            return await _context.Messages
+                .FirstOrDefaultAsync(m => m.Id == id);
         }
 
         public async Task<List<Message>> GetByReceiverIdAsync(string receiverId)
         {
             return await _context.Messages
-                .Where(m => m.ReceiverId == receiverId).ToListAsync();
+                .Include(m => m.Sender)
+                .Where(m => m.ReceiverId == receiverId)
+                .ToListAsync();
         }
 
         public async Task<List<Message>> GetBySenderIDAsync(string senderID)
         {
             return await _context.Messages
-                .Where(m => m.SenderId == senderID).ToListAsync();
+                .Include(m=>m.Receiver)
+                .Where(m => m.SenderId == senderID)
+                .ToListAsync();
         }
     }
 }
