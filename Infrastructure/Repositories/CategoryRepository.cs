@@ -35,7 +35,9 @@ namespace Infrastructure.Repositories
 
         public async Task<List<Category>> GetAllAsync()
         {
-            return await _context.Categories.ToListAsync();
+            return await _context.Categories
+                .Include(c => c.SubCategories)
+                .ToListAsync();
         }
 
         public async Task<Category?> GetByIdAsync(int id)

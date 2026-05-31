@@ -47,6 +47,7 @@ namespace Infrastructure.Repositories
         public async Task<List<Post>> GetBySubCategoryIdAsync(int subCategoryId)
         {
             return await _context.Posts
+                .Include(p => p.User)
                 .Where(p => p.SubCategoryId == subCategoryId).ToListAsync();
         }
 

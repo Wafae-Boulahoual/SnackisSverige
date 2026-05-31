@@ -4,7 +4,7 @@ using Domain.Interfaces;
 using Infrastructure.Data;
 using Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
-using SnackisForum.Presentation.Components;
+using Presentation.Components;
 
 namespace SnackisForum.Presentation
 {

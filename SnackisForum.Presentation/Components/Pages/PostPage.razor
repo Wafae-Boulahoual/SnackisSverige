@@ -1,0 +1,70 @@
+﻿@page "/post/{Id:int}"
+@rendermode InteractiveServer
+@using Application.Interfaces
+@using Domain.Models
+@inject IPostServices PostService
+@inject ICommentServices CommentService
+
+<PageTitle>@post?.Title</PageTitle>
+
+<div class="container mt-4">
+
+    @if (post == null)
+    {
+        <p>Laddar...</p>
+    }
+    else
+    {
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header">
+                <h2>@post.Title</h2>
+                <p class="text-muted small">
+                    ✍️ @post.User?.FirstName @post.User?.LastName —
+                    📅 @post.DatePublication.ToString("yyyy-MM-dd")
+                </p>
+            </div>
+            <div class="card-body">
+                <p>@post.Description</p>
+            </div>
+        </div>
+
+        <h4>Kommentarer</h4>
+        <hr />
+
+        @if (comments == null || comments.Count == 0)
+        {
+            <div class="alert alert-info">
+                Inga kommentarer finns ännu.
+            </div>
+        }
+        else
+        {
+            @foreach (var comment in comments)
+            {
+                <div class="card mb-2 shadow-sm">
+                    <div class="card-body">
+                        <p>@comment.Text</p>
+                        <p class="text-muted small">
+                            ✍️ @comment.User?.FirstName @comment.User?.LastName —
+                            📅 @comment.DateAnswer.ToString("yyyy-MM-dd")
+                        </p>
+                    </div>
+                </div>
+            }
+        }
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private Post? post;
+    private List<Comment>? comments;
+
+    protected override async Task OnInitializedAsync()
+    {
+        post = await PostService.GetByIdAsync(Id);
+        comments = await CommentService.GetByPostIdAsync(Id);
+    }
+}

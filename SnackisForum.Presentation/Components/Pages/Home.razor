@@ -1,18 +1,84 @@
 ﻿@page "/"
+@rendermode InteractiveServer
 @using Application.Interfaces
 @using Domain.Models
 @inject ICategoryServices CategoryService
 
 <PageTitle>Snackis</PageTitle>
 
-<h1>Välkommen till forumet!</h1>
+<div class="container mt-4">
+
+    <h1 class="text-center mb-4">
+        Välkommen till Snackis! 💬
+    </h1>
+
+    @if (Categories != null)
+    {
+        @foreach (var category in Categories)
+        {
+            <div class="card mb-4 shadow-sm">
+
+                <div class="card-header">
+                    <h3 class="mb-1">@category.Title</h3>
+
+                    <p class="text-muted mb-0">
+                        @category.Description
+                    </p>
+                </div>
+
+                <div class="card-body">
+
+                    @if (category.SubCategories != null)
+                    {
+                        <ul class="list-group">
+
+                            @foreach (var subCategory in category.SubCategories)
+                            {
+                                <li class="list-group-item">
+
+                                    <a href="/subcategory/@subCategory.Id"
+                                             class="text-decoration-none fw-bold">
+                                        @subCategory.Title
+                                    </a>
+
+                                    <div class="small text-muted">
+                                        @subCategory.Description
+                                    </div>
+
+                                </li>
+                            }
+
+                        </ul>
+                    }
+                    else
+                    {
+                        <p class="text-muted">
+                            Inga underkategorier finns ännu.
+                        </p>
+                    }
+
+                </div>
+
+            </div>
+        }
+    }
+    else
+    {
+        <div class="alert alert-info">
+            Inga kategorier finns ännu.
+        </div>
+    }
+
+</div>
+
+ 
+ 
 
 
-<h2>Kategorier </h2>
 
 @code{
-    private List<Category> Categories { get; set; } = new();
-    private SubCategory SubCategory { get; set; }
+    private List<Category>? Categories;
+    //private SubCategory SubCategory { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
