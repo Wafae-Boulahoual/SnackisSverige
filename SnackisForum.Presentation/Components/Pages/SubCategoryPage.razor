@@ -1,5 +1,6 @@
 ﻿@page "/subcategory/{Id:int}"
 @rendermode InteractiveServer
+@using Microsoft.AspNetCore.Components.Authorization
 @using Application.Interfaces
 @using Domain.Models
 @inject ISubCategoryServices SubCategoryService
@@ -8,14 +9,25 @@
 <PageTitle>@subCategory?.Title</PageTitle>
 
 <div class="container mt-4">
-
     @if (subCategory != null)
     {
         <h2>@subCategory.Title</h2>
         <p class="text-muted">@subCategory.Description</p>
     }
-
     <hr />
+
+    <AuthorizeView>
+        <Authorized>
+            <a href="/createpost/@Id" class="btn btn-success mb-3">
+                ✏️ Skapa nytt inlägg
+            </a>
+        </Authorized>
+        <NotAuthorized>
+            <div class="alert alert-info">
+                <a href="/Account/Login">Logga in</a> för att skapa ett inlägg.
+            </div>
+        </NotAuthorized>
+    </AuthorizeView>
 
     @if (posts == null)
     {
@@ -51,7 +63,6 @@
 @code {
     [Parameter]
     public int Id { get; set; }
-
     private SubCategory? subCategory;
     private List<Post>? posts;
 

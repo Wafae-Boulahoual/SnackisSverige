@@ -1,0 +1,94 @@
+﻿@page "/sendmessage"
+@rendermode InteractiveServer
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Application.Interfaces
+@using Domain.Models
+@inject IMessageServices MessageService
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager Navigation
+
+<PageTitle>Skicka meddelande</PageTitle>
+
+<div class="container mt-4">
+    <h2>Skicka meddelande</h2>
+    <hr />
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger">@errorMessage</div>
+    }
+    @if (!string.IsNullOrEmpty(successMessage))
+    {
+        <div class="alert alert-success">@successMessage</div>
+    }
+
+    <div class="mb-3">
+        <label>Till (användarnamn)</label>
+        <input class="form-control" @bind="receiverUserName" />
+    </div>
+    <div class="mb-3">
+        <label>Ämne</label>
+        <input class="form-control" @bind="title" />
+    </div>
+    <div class="mb-3">
+        <label>Meddelande</label>
+        <textarea class="form-control" rows="5" @bind="theMessage"></textarea>
+    </div>
+
+    <button class="btn btn-primary" @onclick="SendMessageAsync">Skicka</button>
+    <a href="/messages" class="btn btn-secondary ms-2">Avbryt</a>
+</div>
+
+@code {
+    private string receiverUserName = "";
+    private string title = "";
+    private string theMessage = "";
+    private string errorMessage = "";
+    private string successMessage = "";
+
+    private async Task SendMessageAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var sender = await UserManager.GetUserAsync(authState.User);
+
+        if (sender == null)
+        {
+            errorMessage = "Du måste vara inloggad.";
+            return;
+        }
+
+        var receiver = await UserManager.FindByNameAsync(receiverUserName);
+        if (receiver == null)
+        {
+            errorMessage = "Användaren hittades inte.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(title) || string.IsNullOrWhiteSpace(theMessage))
+        {
+            errorMessage = "Fyll i alla fält.";
+            return;
+        }
+
+        var message = new Message
+        {
+            Title = title,
+            TheMessage = theMessage,
+            SenderId = sender.Id,
+            ReceiverId = receiver.Id,
+            SendingTime = DateTime.Now,
+            IsRead = false
+        };
+
+        await MessageService.AddAsync(message);
+        successMessage = "Meddelandet skickades!";
+        receiverUserName = "";
+        title = "";
+        theMessage = "";
+        errorMessage = "";
+    }
+}

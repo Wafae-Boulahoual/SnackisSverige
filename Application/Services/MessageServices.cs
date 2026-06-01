@@ -39,5 +39,10 @@ namespace Application.Services
         {
             return await _messageRepository.GetBySenderIDAsync(senderID);
         }
+
+        public async Task UpdateAsync(Message message)
+        {
+            await _messageRepository.UpdateAsync(message);
+        }
     }
 }

@@ -11,6 +11,7 @@ namespace Application.Interfaces
     {
         Task AddAsync(Message message);
         Task DeleteAsync(int id);
+        Task UpdateAsync(Message message);
         Task<Message?> GetByIdAsync(int id); // om man vill detela den
         Task<List<Message>> GetBySenderIDAsync(string senderID);
         Task<List<Message>> GetByReceiverIdAsync(string receiverId);

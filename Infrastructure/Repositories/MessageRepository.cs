@@ -54,5 +54,11 @@ namespace Infrastructure.Repositories
                 .Where(m => m.SenderId == senderID)
                 .ToListAsync();
         }
+
+        public async Task UpdateAsync(Message message)
+        {
+            _context.Messages.Update(message);
+            await _context.SaveChangesAsync();
+        }
     }
 }

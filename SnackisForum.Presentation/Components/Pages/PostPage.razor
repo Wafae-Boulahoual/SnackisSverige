@@ -1,14 +1,19 @@
 ﻿@page "/post/{Id:int}"
 @rendermode InteractiveServer
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Identity
 @using Application.Interfaces
 @using Domain.Models
+@using System.ComponentModel.DataAnnotations
 @inject IPostServices PostService
 @inject ICommentServices CommentService
+@inject IReportServices ReportService
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <PageTitle>@post?.Title</PageTitle>
 
 <div class="container mt-4">
-
     @if (post == null)
     {
         <p>Laddar...</p>
@@ -25,6 +30,18 @@
             </div>
             <div class="card-body">
                 <p>@post.Description</p>
+                <AuthorizeView Context="authContext">
+                    <Authorized>
+                        <button class="btn btn-sm btn-outline-danger"
+                                @onclick="() => ReportPost(post)">
+                            🚩 Anmäl inlägg
+                        </button>
+                    </Authorized>
+                </AuthorizeView>
+                @if (reportSuccess)
+                {
+                    <div class="alert alert-success mt-2">Anmälan skickad!</div>
+                }
             </div>
         </div>
 
@@ -48,10 +65,45 @@
                             ✍️ @comment.User?.FirstName @comment.User?.LastName —
                             📅 @comment.DateAnswer.ToString("yyyy-MM-dd")
                         </p>
+                        <AuthorizeView Context="authContext">
+                            <Authorized>
+                                <button class="btn btn-sm btn-outline-danger"
+                                        @onclick="() => ReportComment(comment)">
+                                    🚩 Anmäl kommentar
+                                </button>
+                            </Authorized>
+                        </AuthorizeView>
                     </div>
                 </div>
             }
         }
+
+        <hr />
+        <h5>Skriv en kommentar</h5>
+
+        <AuthorizeView Context="authContext">
+            <Authorized>
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <div class="alert alert-danger">@errorMessage</div>
+                }
+                <EditForm Model="commentModel" OnValidSubmit="AddComment" FormName="addcomment">
+                    <DataAnnotationsValidator />
+                    <div class="mb-3">
+                        <InputTextArea class="form-control" rows="3"
+                                       @bind-Value="commentModel.Text"
+                                       placeholder="Skriv din kommentar här..." />
+                        <ValidationMessage For="() => commentModel.Text" class="text-danger" />
+                    </div>
+                    <button class="btn btn-primary">Skicka</button>
+                </EditForm>
+            </Authorized>
+            <NotAuthorized>
+                <div class="alert alert-info">
+                    <a href="/Account/Login">Logga in</a> för att kommentera.
+                </div>
+            </NotAuthorized>
+        </AuthorizeView>
     }
 </div>
 
@@ -61,10 +113,83 @@
 
     private Post? post;
     private List<Comment>? comments;
+    private string errorMessage = "";
+    private bool reportSuccess = false;
+
+    [SupplyParameterFromForm]
+    private CommentInput commentModel { get; set; } = new();
 
     protected override async Task OnInitializedAsync()
     {
         post = await PostService.GetByIdAsync(Id);
         comments = await CommentService.GetByPostIdAsync(Id);
+    }
+
+    private async Task ReportPost(Post post)
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = await UserManager.GetUserAsync(authState.User);
+        if (user == null) return;
+
+        var report = new Report
+        {
+            Reason = "Anmält av användare",
+            DateReport = DateTime.Now,
+            UserId = user.Id,
+            PostId = post.Id,
+            IsReviewed = false
+        };
+
+        await ReportService.AddAsync(report);
+        reportSuccess = true;
+    }
+
+    private async Task ReportComment(Comment comment)
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = await UserManager.GetUserAsync(authState.User);
+        if (user == null) return;
+
+        var report = new Report
+        {
+            Reason = "Anmält av användare",
+            DateReport = DateTime.Now,
+            UserId = user.Id,
+            CommentId = comment.Id,
+            IsReviewed = false
+        };
+
+        await ReportService.AddAsync(report);
+        reportSuccess = true;
+    }
+
+    private async Task AddComment()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = await UserManager.GetUserAsync(authState.User);
+
+        if (user == null)
+        {
+            errorMessage = "Du måste vara inloggad.";
+            return;
+        }
+
+        var comment = new Comment
+        {
+            Text = commentModel.Text,
+            UserId = user.Id,
+            PostId = Id,
+            DateAnswer = DateTime.Now
+        };
+
+        await CommentService.AddAsync(comment);
+        commentModel = new();
+        comments = await CommentService.GetByPostIdAsync(Id);
+    }
+
+    public class CommentInput
+    {
+        [Required]
+        public string Text { get; set; } = "";
     }
 }
