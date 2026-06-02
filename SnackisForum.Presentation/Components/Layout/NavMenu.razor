@@ -17,7 +17,6 @@
                 🏠 Home
             </NavLink>
         </div>
-
         <AuthorizeView>
             <Authorized>
                 <div class="nav-item px-3">
@@ -30,6 +29,19 @@
                         ✉️ Meddelanden
                     </NavLink>
                 </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="uploadphoto">
+                        🖼️ Profilbild
+                    </NavLink>
+                </div>
+                @if (context.User.Identity?.Name == "mariorossi")
+                {
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="admin/reports">
+                            🚩 Reports
+                        </NavLink>
+                    </div>
+                }
                 <div class="nav-item px-3">
                     <form action="Account/Logout" method="post">
                         <AntiforgeryToken />

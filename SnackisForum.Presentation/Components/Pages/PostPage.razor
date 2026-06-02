@@ -21,12 +21,31 @@
     else
     {
         <div class="card mb-4 shadow-sm">
-            <div class="card-header">
-                <h2>@post.Title</h2>
-                <p class="text-muted small">
-                    ✍️ @post.User?.FirstName @post.User?.LastName —
-                    📅 @post.DatePublication.ToString("yyyy-MM-dd")
-                </p>
+            <div class="card-header d-flex justify-content-between align-items-start">
+                <div class="d-flex align-items-center gap-3">
+                    @if (!string.IsNullOrEmpty(post.User?.ImagePath))
+                    {
+                        <img src="@post.User.ImagePath" class="rounded-circle"
+                             style="width:45px; height:45px; object-fit:cover;" />
+                    }
+                    else
+                    {
+                        <span style="font-size:2rem;">👤</span>
+                    }
+                    <div>
+                        <h2>@post.Title</h2>
+                        <p class="text-muted small">
+                            ✍️ @post.User?.FirstName @post.User?.LastName —
+                            📅 @post.DatePublication.ToString("yyyy-MM-dd")
+                        </p>
+                    </div>
+                </div>
+                @if (IsAdmin)
+                {
+                    <button class="btn btn-sm btn-danger" @onclick="DeletePost">
+                        🗑️ Ta bort inlägg
+                    </button>
+                }
             </div>
             <div class="card-body">
                 <p>@post.Description</p>
@@ -50,9 +69,7 @@
 
         @if (comments == null || comments.Count == 0)
         {
-            <div class="alert alert-info">
-                Inga kommentarer finns ännu.
-            </div>
+            <div class="alert alert-info">Inga kommentarer finns ännu.</div>
         }
         else
         {
@@ -60,19 +77,39 @@
             {
                 <div class="card mb-2 shadow-sm">
                     <div class="card-body">
+                        <div class="d-flex align-items-center gap-3 mb-2">
+                            @if (!string.IsNullOrEmpty(comment.User?.ImagePath))
+                            {
+                                <img src="@comment.User.ImagePath" class="rounded-circle"
+                                     style="width:40px; height:40px; object-fit:cover;" />
+                            }
+                            else
+                            {
+                                <span style="font-size:1.5rem;">👤</span>
+                            }
+                            <p class="text-muted small mb-0">
+                                ✍️ @comment.User?.FirstName @comment.User?.LastName —
+                                📅 @comment.DateAnswer.ToString("yyyy-MM-dd")
+                            </p>
+                        </div>
                         <p>@comment.Text</p>
-                        <p class="text-muted small">
-                            ✍️ @comment.User?.FirstName @comment.User?.LastName —
-                            📅 @comment.DateAnswer.ToString("yyyy-MM-dd")
-                        </p>
-                        <AuthorizeView Context="authContext">
-                            <Authorized>
-                                <button class="btn btn-sm btn-outline-danger"
-                                        @onclick="() => ReportComment(comment)">
-                                    🚩 Anmäl kommentar
+                        <div class="d-flex gap-2">
+                            <AuthorizeView Context="authContext">
+                                <Authorized>
+                                    <button class="btn btn-sm btn-outline-danger"
+                                            @onclick="() => ReportComment(comment)">
+                                        🚩 Anmäl kommentar
+                                    </button>
+                                </Authorized>
+                            </AuthorizeView>
+                            @if (IsAdmin)
+                            {
+                                <button class="btn btn-sm btn-danger"
+                                        @onclick="() => DeleteComment(comment.Id)">
+                                    🗑️ Ta bort
                                 </button>
-                            </Authorized>
-                        </AuthorizeView>
+                            }
+                        </div>
                     </div>
                 </div>
             }
@@ -107,89 +144,3 @@
     }
 </div>
 
-@code {
-    [Parameter]
-    public int Id { get; set; }
-
-    private Post? post;
-    private List<Comment>? comments;
-    private string errorMessage = "";
-    private bool reportSuccess = false;
-
-    [SupplyParameterFromForm]
-    private CommentInput commentModel { get; set; } = new();
-
-    protected override async Task OnInitializedAsync()
-    {
-        post = await PostService.GetByIdAsync(Id);
-        comments = await CommentService.GetByPostIdAsync(Id);
-    }
-
-    private async Task ReportPost(Post post)
-    {
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var user = await UserManager.GetUserAsync(authState.User);
-        if (user == null) return;
-
-        var report = new Report
-        {
-            Reason = "Anmält av användare",
-            DateReport = DateTime.Now,
-            UserId = user.Id,
-            PostId = post.Id,
-            IsReviewed = false
-        };
-
-        await ReportService.AddAsync(report);
-        reportSuccess = true;
-    }
-
-    private async Task ReportComment(Comment comment)
-    {
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var user = await UserManager.GetUserAsync(authState.User);
-        if (user == null) return;
-
-        var report = new Report
-        {
-            Reason = "Anmält av användare",
-            DateReport = DateTime.Now,
-            UserId = user.Id,
-            CommentId = comment.Id,
-            IsReviewed = false
-        };
-
-        await ReportService.AddAsync(report);
-        reportSuccess = true;
-    }
-
-    private async Task AddComment()
-    {
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var user = await UserManager.GetUserAsync(authState.User);
-
-        if (user == null)
-        {
-            errorMessage = "Du måste vara inloggad.";
-            return;
-        }
-
-        var comment = new Comment
-        {
-            Text = commentModel.Text,
-            UserId = user.Id,
-            PostId = Id,
-            DateAnswer = DateTime.Now
-        };
-
-        await CommentService.AddAsync(comment);
-        commentModel = new();
-        comments = await CommentService.GetByPostIdAsync(Id);
-    }
-
-    public class CommentInput
-    {
-        [Required]
-        public string Text { get; set; } = "";
-    }
-}

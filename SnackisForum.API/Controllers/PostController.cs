@@ -23,7 +23,6 @@ namespace API.Controllers
                 return NotFound("Nessun post trovato per questa discussione.");
             }
 
-            // Selezioniamo solo i dati richiesti dal prof (Contenuto, Autore, Data)
             var result = posts.Select(p => new
             {
                 p.Title,

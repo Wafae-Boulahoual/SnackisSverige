@@ -2,86 +2,164 @@
 @rendermode InteractiveServer
 @using Application.Interfaces
 @using Domain.Models
+@using Microsoft.AspNetCore.Components.Authorization
 @inject ICategoryServices CategoryService
+@inject ISubCategoryServices SubCategoryService
+@inject AuthenticationStateProvider AuthStateProvider
 
 <PageTitle>Snackis</PageTitle>
 
 <div class="container mt-4">
+    <h1 class="text-center mb-4">Välkommen till Snackis! 💬</h1>
 
-    <h1 class="text-center mb-4">
-        Välkommen till Snackis! 💬
-    </h1>
+    @if (IsAdmin)
+    {
+        <div class="mb-3 text-end">
+            <button class="btn btn-primary" @onclick="() => showCreateCategory = !showCreateCategory">
+                ➕ Skapa ny kategori
+            </button>
+        </div>
 
-    @if (Categories != null)
+        @if (showCreateCategory)
+        {
+            <div class="card mb-4 border-primary">
+                <div class="card-body">
+                    <h5>Ny kategori</h5>
+                    <div class="mb-2">
+                        <input class="form-control" placeholder="Titel" @bind="newCategoryTitle" />
+                    </div>
+                    <div class="mb-2">
+                        <input class="form-control" placeholder="Beskrivning" @bind="newCategoryDescription" />
+                    </div>
+                    <button class="btn btn-success" @onclick="CreateCategory">Spara</button>
+                    <button class="btn btn-secondary ms-2" @onclick="() => showCreateCategory = false">Avbryt</button>
+                </div>
+            </div>
+        }
+    }
+
+    @if (Categories == null)
+    {
+        <p>Laddar...</p>
+    }
+    else if (Categories.Count == 0)
+    {
+        <div class="alert alert-info">Inga kategorier finns ännu.</div>
+    }
+    else
     {
         @foreach (var category in Categories)
         {
             <div class="card mb-4 shadow-sm">
-
-                <div class="card-header">
-                    <h3 class="mb-1">@category.Title</h3>
-
-                    <p class="text-muted mb-0">
-                        @category.Description
-                    </p>
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h3 class="mb-1">@category.Title</h3>
+                        <p class="text-muted mb-0">@category.Description</p>
+                    </div>
+                    @if (IsAdmin)
+                    {
+                        <div>
+                            <button class="btn btn-sm btn-warning me-1"
+                                    @onclick="() => StartEditCategory(category)">
+                                ✏️ Redigera
+                            </button>
+                            <button class="btn btn-sm btn-danger me-1"
+                                    @onclick="() => DeleteCategory(category.Id)">
+                                🗑️ Ta bort
+                            </button>
+                            <button class="btn btn-sm btn-success"
+                                    @onclick="() => ToggleCreateSubCategory(category.Id)">
+                                ➕ Ny subkategori
+                            </button>
+                        </div>
+                    }
                 </div>
 
-                <div class="card-body">
+                @if (IsAdmin && editCategoryId == category.Id)
+                {
+                    <div class="card-body border-bottom border-warning">
+                        <h6>Redigera kategori</h6>
+                        <div class="mb-2">
+                            <input class="form-control" placeholder="Titel" @bind="editCategoryTitle" />
+                        </div>
+                        <div class="mb-2">
+                            <input class="form-control" placeholder="Beskrivning" @bind="editCategoryDescription" />
+                        </div>
+                        <button class="btn btn-warning" @onclick="SaveEditCategory">Spara</button>
+                        <button class="btn btn-secondary ms-2" @onclick="CancelEditCategory">Avbryt</button>
+                    </div>
+                }
 
-                    @if (category.SubCategories != null)
+                @if (IsAdmin && createSubCategoryForCategoryId == category.Id)
+                {
+                    <div class="card-body border-bottom border-success">
+                        <h6>Ny subkategori</h6>
+                        <div class="mb-2">
+                            <input class="form-control" placeholder="Titel" @bind="newSubCategoryTitle" />
+                        </div>
+                        <div class="mb-2">
+                            <input class="form-control" placeholder="Beskrivning" @bind="newSubCategoryDescription" />
+                        </div>
+                        <button class="btn btn-success" @onclick="() => CreateSubCategory(category.Id)">Spara</button>
+                        <button class="btn btn-secondary ms-2" @onclick="() => createSubCategoryForCategoryId = null">Avbryt</button>
+                    </div>
+                }
+
+                <div class="card-body">
+                    @if (category.SubCategories != null && category.SubCategories.Any())
                     {
                         <ul class="list-group">
-
-                            @foreach (var subCategory in category.SubCategories)
+                            @foreach (var sub in category.SubCategories)
                             {
                                 <li class="list-group-item">
-
-                                    <a href="/subcategory/@subCategory.Id"
-                                             class="text-decoration-none fw-bold">
-                                        @subCategory.Title
-                                    </a>
-
-                                    <div class="small text-muted">
-                                        @subCategory.Description
-                                    </div>
-
+                                    @if (IsAdmin && editSubCategoryId == sub.Id)
+                                    {
+                                        <div>
+                                            <div class="mb-2">
+                                                <input class="form-control" placeholder="Titel" @bind="editSubCategoryTitle" />
+                                            </div>
+                                            <div class="mb-2">
+                                                <input class="form-control" placeholder="Beskrivning" @bind="editSubCategoryDescription" />
+                                            </div>
+                                            <button class="btn btn-sm btn-warning" @onclick="SaveEditSubCategory">Spara</button>
+                                            <button class="btn btn-sm btn-secondary ms-2" @onclick="CancelEditSubCategory">Avbryt</button>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <a class="fw-bold text-decoration-none" href="/subcategory/@sub.Id">
+                                                    @sub.Title
+                                                </a>
+                                                <div class="small text-muted">@sub.Description</div>
+                                            </div>
+                                            @if (IsAdmin)
+                                            {
+                                                <div>
+                                                    <button class="btn btn-sm btn-warning me-1"
+                                                            @onclick="() => StartEditSubCategory(sub)">
+                                                        ✏️
+                                                    </button>
+                                                    <button class="btn btn-sm btn-danger"
+                                                            @onclick="() => DeleteSubCategory(sub.Id)">
+                                                        🗑️
+                                                    </button>
+                                                </div>
+                                            }
+                                        </div>
+                                    }
                                 </li>
                             }
-
                         </ul>
                     }
                     else
                     {
-                        <p class="text-muted">
-                            Inga underkategorier finns ännu.
-                        </p>
+                        <p class="text-muted mb-0">Inga underkategorier finns ännu.</p>
                     }
-
                 </div>
-
             </div>
         }
     }
-    else
-    {
-        <div class="alert alert-info">
-            Inga kategorier finns ännu.
-        </div>
-    }
-
 </div>
 
- 
- 
-
-
-
-@code{
-    private List<Category>? Categories;
-    //private SubCategory SubCategory { get; set; }
-
-    protected override async Task OnInitializedAsync()
-    {
-        Categories = await CategoryService.GetAllAsync();
-    }
-}
