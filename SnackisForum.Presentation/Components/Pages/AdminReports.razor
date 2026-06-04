@@ -11,7 +11,7 @@
 @inject UserManager<ApplicationUser> UserManager
 
 <PageTitle>Admin - Anmälningar</PageTitle>
-
+<ForumHeader />
 <div class="container mt-4">
     <h2>Anmälningar</h2>
     <hr />
@@ -37,7 +37,7 @@
                         <p><strong>Text:</strong> @report.Post.Description</p>
                         <button class="btn btn-danger btn-sm me-2"
                                 @onclick="() => DeletePost(report)">
-                            🗑️ Ta bort inlägg
+                             Ta bort inlägg
                         </button>
                     }
 
@@ -46,7 +46,7 @@
                         <p><strong>Kommentar:</strong> @report.Comment.Text</p>
                         <button class="btn btn-danger btn-sm me-2"
                                 @onclick="() => DeleteComment(report)">
-                            🗑️ Ta bort kommentar
+                             Ta bort kommentar
                         </button>
                     }
 
@@ -54,7 +54,7 @@
                     {
                         <button class="btn btn-success btn-sm"
                                 @onclick="() => MarkReviewed(report)">
-                            ✅ Markera som granskad
+                             Markera som granskad
                         </button>
                     }
                     else

@@ -2,43 +2,37 @@
 @implements IDisposable
 @inject NavigationManager NavigationManager
 
-<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">Snackis 💬</a>
-    </div>
-</div>
 
-<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
 
 <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="nav flex-column">
+    <nav class="nav flex-row flex-wrap gap-2">
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                🏠 Home
+                 Home
             </NavLink>
         </div>
         <AuthorizeView>
             <Authorized>
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="Account/Manage">
-                        👤 @context.User.Identity?.Name
+                         @context.User.Identity?.Name
                     </NavLink>
                 </div>
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="messages">
-                        ✉️ Meddelanden
+                         Meddelanden
                     </NavLink>
                 </div>
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="uploadphoto">
-                        🖼️ Profilbild
+                         Profilbild
                     </NavLink>
                 </div>
                 @if (context.User.Identity?.Name == "mariorossi")
                 {
                     <div class="nav-item px-3">
                         <NavLink class="nav-link" href="admin/reports">
-                            🚩 Reports
+                             Reports
                         </NavLink>
                     </div>
                 }
@@ -47,7 +41,7 @@
                         <AntiforgeryToken />
                         <input type="hidden" name="ReturnUrl" value="@currentUrl" />
                         <button type="submit" class="nav-link">
-                            🚪 Logout
+                             Logout
                         </button>
                     </form>
                 </div>
@@ -55,12 +49,12 @@
             <NotAuthorized>
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="Account/Register">
-                        📝 Register
+                         Register
                     </NavLink>
                 </div>
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="Account/Login">
-                        🔑 Login
+                         Login
                     </NavLink>
                 </div>
             </NotAuthorized>

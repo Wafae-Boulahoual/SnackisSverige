@@ -12,14 +12,22 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
 <PageTitle>@post?.Title</PageTitle>
-
+<ForumHeader />
 <div class="container mt-4">
+
     @if (post == null)
     {
         <p>Laddar...</p>
     }
     else
     {
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Home</a></li>
+                <li class="breadcrumb-item"><a href="/subcategory/@post.SubCategoryId">@post.SubCategory?.Title</a></li>
+                <li class="breadcrumb-item active">@post.Title</li>
+            </ol>
+        </nav>
         <div class="card mb-4 shadow-sm">
             <div class="card-header d-flex justify-content-between align-items-start">
                 <div class="d-flex align-items-center gap-3">
@@ -35,15 +43,15 @@
                     <div>
                         <h2>@post.Title</h2>
                         <p class="text-muted small">
-                            ✍️ @post.User?.FirstName @post.User?.LastName —
-                            📅 @post.DatePublication.ToString("yyyy-MM-dd")
+                             @post.User?.FirstName @post.User?.LastName —
+                             @post.DatePublication.ToString("yyyy-MM-dd")
                         </p>
                     </div>
                 </div>
                 @if (IsAdmin)
                 {
                     <button class="btn btn-sm btn-danger" @onclick="DeletePost">
-                        🗑️ Ta bort inlägg
+                         Ta bort inlägg
                     </button>
                 }
             </div>
@@ -53,7 +61,7 @@
                     <Authorized>
                         <button class="btn btn-sm btn-outline-danger"
                                 @onclick="() => ReportPost(post)">
-                            🚩 Anmäl inlägg
+                             Anmäl inlägg
                         </button>
                     </Authorized>
                 </AuthorizeView>
@@ -88,8 +96,8 @@
                                 <span style="font-size:1.5rem;">👤</span>
                             }
                             <p class="text-muted small mb-0">
-                                ✍️ @comment.User?.FirstName @comment.User?.LastName —
-                                📅 @comment.DateAnswer.ToString("yyyy-MM-dd")
+                                 @comment.User?.FirstName @comment.User?.LastName —
+                                 @comment.DateAnswer.ToString("yyyy-MM-dd")
                             </p>
                         </div>
                         <p>@comment.Text</p>
@@ -98,7 +106,7 @@
                                 <Authorized>
                                     <button class="btn btn-sm btn-outline-danger"
                                             @onclick="() => ReportComment(comment)">
-                                        🚩 Anmäl kommentar
+                                         Anmäl kommentar
                                     </button>
                                 </Authorized>
                             </AuthorizeView>
@@ -106,7 +114,7 @@
                             {
                                 <button class="btn btn-sm btn-danger"
                                         @onclick="() => DeleteComment(comment.Id)">
-                                    🗑️ Ta bort
+                                     Ta bort
                                 </button>
                             }
                         </div>
