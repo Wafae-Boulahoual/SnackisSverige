@@ -5,10 +5,10 @@
 @using Domain.Models
 @inject ISubCategoryServices SubCategoryService
 @inject IPostServices PostService
+@inject IPostServiceApi PostServiceApi
 @inject AuthenticationStateProvider AuthStateProvider
 
 <PageTitle>@subCategory?.Title</PageTitle>
-<ForumHeader />
 <div class="container mt-4">
     @if (subCategory != null)
     {

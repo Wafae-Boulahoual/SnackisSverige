@@ -1,0 +1,98 @@
+﻿@page "/messages"
+@rendermode InteractiveServer
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Application.Interfaces
+@using Domain.Models
+@inject IMessageServices MessageService
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>Meddelanden</PageTitle>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Meddelanden</h2>
+    <a href="/sendmessage" class="btn btn-primary">Nytt meddelande</a>
+</div>
+<hr />
+
+<h4>Inkorgen</h4>
+@if (receivedMessages.Count == 0)
+{
+    <p>Inga mottagna meddelanden.</p>
+}
+else
+{
+    @foreach (var message in receivedMessages.OrderByDescending(m => m.SendingTime))
+    {
+        <div class="card mb-2">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <h6>@message.Title</h6>
+                    <small class="text-muted">@message.SendingTime.ToString("yyyy-MM-dd HH:mm")</small>
+                </div>
+                <p class="text-muted small">Från: @message.Sender?.UserName</p>
+                <p>@message.TheMessage</p>
+                @if (!message.IsRead)
+                {
+                    <span class="badge bg-primary">Ny</span>
+                    <button class="btn btn-sm btn-outline-secondary ms-2" @onclick="() => MarkAsRead(message)">
+                        Markera som läst
+                    </button>
+                }
+            </div>
+        </div>
+    }
+}
+
+<hr />
+<h4>Skickade meddelanden</h4>
+@if (sentMessages.Count == 0)
+{
+    <p>Inga skickade meddelanden.</p>
+}
+else
+{
+    @foreach (var message in sentMessages.OrderByDescending(m => m.SendingTime))
+    {
+        <div class="card mb-2">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <h6>@message.Title</h6>
+                    <small class="text-muted">@message.SendingTime.ToString("yyyy-MM-dd HH:mm")</small>
+                </div>
+                <p class="text-muted small">Till: @message.Receiver?.UserName</p>
+                <p>@message.TheMessage</p>
+            </div>
+        </div>
+    }
+}
+
+@code {
+    private List<Message> receivedMessages = new();
+    private List<Message> sentMessages = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = await UserManager.GetUserAsync(authState.User);
+        if (user == null) return;
+
+        receivedMessages = await MessageService.GetByReceiverIdAsync(user.Id);
+        sentMessages = await MessageService.GetBySenderIDAsync(user.Id);
+    }
+
+    private async Task MarkAsRead(Message message)
+    {
+        message.IsRead = true;
+        await MessageService.UpdateAsync(message);
+
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = await UserManager.GetUserAsync(authState.User);
+        if (user == null) return;
+
+        receivedMessages = await MessageService.GetByReceiverIdAsync(user.Id);
+    }
+}

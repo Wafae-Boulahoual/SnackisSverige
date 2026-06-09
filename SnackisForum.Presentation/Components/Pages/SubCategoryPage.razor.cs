@@ -15,7 +15,7 @@ namespace Presentation.Components.Pages
         protected override async Task OnInitializedAsync()
         {
             subCategory = await SubCategoryService.GetByIdAsync(Id);
-            posts = await PostService.GetBySubCategoryIdAsync(Id);
+            posts = await PostServiceApi.GetBySubCategoryIdAsync(Id);
         }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -31,7 +31,7 @@ namespace Presentation.Components.Pages
         private async Task DeletePost(int postId)
         {
             await PostService.DeleteAsync(postId);
-            posts = await PostService.GetBySubCategoryIdAsync(Id);
+            posts = await PostServiceApi.GetBySubCategoryIdAsync(Id);
         }
     }
 }

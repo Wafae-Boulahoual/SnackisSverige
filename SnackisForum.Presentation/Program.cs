@@ -20,7 +20,7 @@ namespace Presentation
             var builder = WebApplication.CreateBuilder(args);
 
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("MyConnectionString")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("MyConnectionStringAzure")));
 
             builder.Services.AddCascadingAuthenticationState();
             builder.Services.AddScoped<IdentityUserAccessor>();
@@ -48,6 +48,18 @@ namespace Presentation
 
             builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 
+            builder.Services.AddHttpClient("SnackisAPI", client =>
+            {
+                //client.BaseAddress = new Uri("http://localhost:5107");
+                client.BaseAddress = new Uri("https://snackissverige.azurewebsites.net/");
+
+            });
+            builder.Services.AddControllers()
+                    .AddJsonOptions(options =>
+                    {
+                        options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+                    });
+
             // Repositories
             builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
             builder.Services.AddScoped<ISubCategoryRepository, SubCategoryRepository>();
@@ -63,7 +75,8 @@ namespace Presentation
             builder.Services.AddScoped<ICommentServices, CommentServices>();
             builder.Services.AddScoped<IReportServices, ReportServices>();
             builder.Services.AddScoped<IMessageServices, MessageServices>();
-
+            builder.Services.AddScoped<IPostServiceApi, PostServiceApi>();
+            
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents();
 
@@ -76,14 +89,20 @@ namespace Presentation
             }
 
             app.UseHttpsRedirection();
+
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseAntiforgery();
             app.MapStaticAssets();
+
+            app.MapControllers();
+
             app.MapRazorComponents<App>()
                 .AddInteractiveServerRenderMode();
 
             app.MapAdditionalIdentityEndpoints();
+
+
 
             app.Run();
         }

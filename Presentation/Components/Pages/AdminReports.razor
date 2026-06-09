@@ -1,0 +1,95 @@
+﻿@page "/admin/reports"
+@rendermode InteractiveServer
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+@using Application.Interfaces
+@using Domain.Models
+@inject IReportServices ReportService
+@inject IPostServices PostService
+@inject ICommentServices CommentService
+
+<PageTitle>Admin - Anmälningar</PageTitle>
+
+<h2>Anmälningar</h2>
+<hr />
+
+@if (reports == null || reports.Count == 0)
+{
+    <p>Inga anmälningar finns.</p>
+}
+else
+{
+    @foreach (var report in reports.OrderBy(r => r.IsReviewed).ThenByDescending(r => r.DateReport))
+    {
+        <div class="card mb-3">
+            <div class="card-body">
+                <p><strong>Anmält av:</strong> @report.User?.UserName</p>
+                <p><strong>Datum:</strong> @report.DateReport.ToString("yyyy-MM-dd HH:mm")</p>
+                <p><strong>Anledning:</strong> @report.Reason</p>
+
+                @if (report.Post != null)
+                {
+                    <p><strong>Inlägg:</strong> @report.Post.Title</p>
+                    <p><strong>Text:</strong> @report.Post.Description</p>
+                    <button class="btn btn-danger btn-sm me-2" @onclick="() => DeletePost(report)">
+                        Ta bort inlägg
+                    </button>
+                }
+
+                @if (report.Comment != null)
+                {
+                    <p><strong>Kommentar:</strong> @report.Comment.Text</p>
+                    <button class="btn btn-danger btn-sm me-2" @onclick="() => DeleteComment(report)">
+                        Ta bort kommentar
+                    </button>
+                }
+
+                @if (!report.IsReviewed)
+                {
+                    <button class="btn btn-success btn-sm" @onclick="() => MarkReviewed(report)">
+                        Markera som granskad
+                    </button>
+                }
+                else
+                {
+                    <span class="badge bg-success">Granskad</span>
+                }
+            </div>
+        </div>
+    }
+}
+
+@code {
+    private List<Report>? reports;
+
+    protected override async Task OnInitializedAsync()
+    {
+        reports = await ReportService.GetAllAsync();
+    }
+
+    private async Task MarkReviewed(Report report)
+    {
+        await ReportService.MarkAsReviewedAsync(report.Id);
+        reports = await ReportService.GetAllAsync();
+    }
+
+    private async Task DeletePost(Report report)
+    {
+        if (report.PostId == null) return;
+        await PostService.DeleteAsync(report.PostId.Value);
+        await ReportService.MarkAsReviewedAsync(report.Id);
+        reports = await ReportService.GetAllAsync();
+    }
+
+    private async Task DeleteComment(Report report)
+    {
+        if (report.CommentId == null) return;
+        var allReports = await ReportService.GetAllAsync();
+        foreach (var r in allReports.Where(r => r.CommentId == report.CommentId))
+        {
+            await ReportService.DeleteAsync(r.Id);
+        }
+        await CommentService.DeleteAsync(report.CommentId.Value);
+        reports = await ReportService.GetAllAsync();
+    }
+}

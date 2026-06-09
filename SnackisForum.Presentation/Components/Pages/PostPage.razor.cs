@@ -21,7 +21,7 @@ namespace Presentation.Components.Pages
 
         protected override async Task OnInitializedAsync()
         {
-            post = await PostService.GetByIdAsync(Id);
+            post = await PostServiceApi.GetByIdAsync(Id);
             comments = await CommentService.GetByPostIdAsync(Id);
         }
 

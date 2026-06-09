@@ -1,0 +1,259 @@
+﻿@page "/"
+@rendermode InteractiveServer
+@using Application.Interfaces
+@using Domain.Models
+@using Microsoft.AspNetCore.Components.Authorization
+@inject ICategoryServices CategoryService
+@inject ISubCategoryServices SubCategoryService
+@inject AuthenticationStateProvider AuthStateProvider
+
+<PageTitle>Snackis</PageTitle>
+
+<h2>Kategorier</h2>
+<hr />
+
+@* Knapp för admin att skapa ny kategori *@
+@if (IsAdmin)
+{
+    <button class="btn btn-primary mb-3" @onclick="() => showCreateCategory = !showCreateCategory">
+        Skapa ny kategori
+    </button>
+
+    @if (showCreateCategory)
+    {
+        <div class="card mb-3">
+            <div class="card-body">
+                <input class="form-control mb-2" placeholder="Titel" @bind="newCategoryTitle" />
+                <input class="form-control mb-2" placeholder="Beskrivning" @bind="newCategoryDescription" />
+                <button class="btn btn-success" @onclick="CreateCategory">Spara</button>
+                <button class="btn btn-secondary ms-2" @onclick="() => showCreateCategory = false">Avbryt</button>
+            </div>
+        </div>
+    }
+}
+
+@* Visa alla kategorier *@
+@if (Categories == null)
+{
+    <p>Laddar...</p>
+}
+else if (Categories.Count == 0)
+{
+    <p>Inga kategorier finns ännu.</p>
+}
+else
+{
+    @foreach (var category in Categories)
+    {
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h4>@category.Title</h4>
+                    <p class="text-muted mb-0">@category.Description</p>
+                </div>
+                @* Admin-knappar för kategori *@
+                @if (IsAdmin)
+                {
+                    <div>
+                        <button class="btn btn-sm btn-warning me-1" @onclick="() => StartEditCategory(category)">Redigera</button>
+                        <button class="btn btn-sm btn-danger me-1" @onclick="() => DeleteCategory(category.Id)">Ta bort</button>
+                        <button class="btn btn-sm btn-success" @onclick="() => ToggleCreateSubCategory(category.Id)">Ny subkategori</button>
+                    </div>
+                }
+            </div>
+
+            @* Formulär för att redigera kategori *@
+            @if (IsAdmin && editCategoryId == category.Id)
+            {
+                <div class="card-body border-bottom">
+                    <input class="form-control mb-2" placeholder="Titel" @bind="editCategoryTitle" />
+                    <input class="form-control mb-2" placeholder="Beskrivning" @bind="editCategoryDescription" />
+                    <button class="btn btn-warning" @onclick="SaveEditCategory">Spara</button>
+                    <button class="btn btn-secondary ms-2" @onclick="CancelEditCategory">Avbryt</button>
+                </div>
+            }
+
+            @* Formulär för att skapa ny subkategori *@
+            @if (IsAdmin && createSubCategoryForCategoryId == category.Id)
+            {
+                <div class="card-body border-bottom">
+                    <input class="form-control mb-2" placeholder="Titel" @bind="newSubCategoryTitle" />
+                    <input class="form-control mb-2" placeholder="Beskrivning" @bind="newSubCategoryDescription" />
+                    <button class="btn btn-success" @onclick="() => CreateSubCategory(category.Id)">Spara</button>
+                    <button class="btn btn-secondary ms-2" @onclick="() => createSubCategoryForCategoryId = null">Avbryt</button>
+                </div>
+            }
+
+            @* Visa subkategorier *@
+            <div class="card-body">
+                @if (category.SubCategories != null && category.SubCategories.Any())
+                {
+                    <ul class="list-group">
+                        @foreach (var sub in category.SubCategories)
+                        {
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <a href="/subcategory/@sub.Id" class="fw-bold text-decoration-none">@sub.Title</a>
+                                    <div class="small text-muted">@sub.Description</div>
+                                </div>
+                                @* Admin-knappar för subkategori *@
+                                @if (IsAdmin)
+                                {
+                                    <div>
+                                        <button class="btn btn-sm btn-warning me-1" @onclick="() => StartEditSubCategory(sub)">Redigera</button>
+                                        <button class="btn btn-sm btn-danger" @onclick="() => DeleteSubCategory(sub.Id)">Ta bort</button>
+                                    </div>
+                                }
+                            </li>
+
+                            @* Formulär för att redigera subkategori *@
+                            @if (IsAdmin && editSubCategoryId == sub.Id)
+                            {
+                                <li class="list-group-item">
+                                    <input class="form-control mb-2" placeholder="Titel" @bind="editSubCategoryTitle" />
+                                    <input class="form-control mb-2" placeholder="Beskrivning" @bind="editSubCategoryDescription" />
+                                    <button class="btn btn-sm btn-warning" @onclick="SaveEditSubCategory">Spara</button>
+                                    <button class="btn btn-sm btn-secondary ms-2" @onclick="CancelEditSubCategory">Avbryt</button>
+                                </li>
+                            }
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p class="text-muted mb-0">Inga underkategorier finns ännu.</p>
+                }
+            </div>
+        </div>
+    }
+}
+
+@code {
+    private List<Category>? Categories;
+    private bool IsAdmin;
+
+    // Variabler för att skapa ny kategori
+    private bool showCreateCategory = false;
+    private string newCategoryTitle = "";
+    private string newCategoryDescription = "";
+
+    // Variabler för att redigera kategori
+    private int? editCategoryId = null;
+    private string editCategoryTitle = "";
+    private string editCategoryDescription = "";
+
+    // Variabler för att skapa ny subkategori
+    private int? createSubCategoryForCategoryId = null;
+    private string newSubCategoryTitle = "";
+    private string newSubCategoryDescription = "";
+
+    // Variabler för att redigera subkategori
+    private int? editSubCategoryId = null;
+    private string editSubCategoryTitle = "";
+    private string editSubCategoryDescription = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        IsAdmin = authState.User.Identity?.Name == "mariorossi";
+        await LoadCategories();
+    }
+
+    private async Task LoadCategories()
+    {
+        Categories = await CategoryService.GetAllAsync();
+    }
+
+    private async Task CreateCategory()
+    {
+        if (string.IsNullOrWhiteSpace(newCategoryTitle)) return;
+        var category = new Category { Title = newCategoryTitle, Description = newCategoryDescription };
+        await CategoryService.AddAsync(category);
+        newCategoryTitle = "";
+        newCategoryDescription = "";
+        showCreateCategory = false;
+        await LoadCategories();
+    }
+
+    private void StartEditCategory(Category category)
+    {
+        editCategoryId = category.Id;
+        editCategoryTitle = category.Title;
+        editCategoryDescription = category.Description;
+    }
+
+    private async Task SaveEditCategory()
+    {
+        var category = Categories?.FirstOrDefault(c => c.Id == editCategoryId);
+        if (category == null) return;
+        category.Title = editCategoryTitle;
+        category.Description = editCategoryDescription;
+        await CategoryService.UpdateAsync(category);
+        CancelEditCategory();
+        await LoadCategories();
+    }
+
+    private void CancelEditCategory()
+    {
+        editCategoryId = null;
+        editCategoryTitle = "";
+        editCategoryDescription = "";
+    }
+
+    private async Task DeleteCategory(int id)
+    {
+        await CategoryService.DeleteAsync(id);
+        await LoadCategories();
+    }
+
+    private void ToggleCreateSubCategory(int categoryId)
+    {
+        createSubCategoryForCategoryId = createSubCategoryForCategoryId == categoryId ? null : categoryId;
+        newSubCategoryTitle = "";
+        newSubCategoryDescription = "";
+    }
+
+    private async Task CreateSubCategory(int categoryId)
+    {
+        if (string.IsNullOrWhiteSpace(newSubCategoryTitle)) return;
+        var sub = new SubCategory { Title = newSubCategoryTitle, Description = newSubCategoryDescription, CategoryId = categoryId };
+        await SubCategoryService.AddAsync(sub);
+        newSubCategoryTitle = "";
+        newSubCategoryDescription = "";
+        createSubCategoryForCategoryId = null;
+        await LoadCategories();
+    }
+
+    private void StartEditSubCategory(SubCategory sub)
+    {
+        editSubCategoryId = sub.Id;
+        editSubCategoryTitle = sub.Title;
+        editSubCategoryDescription = sub.Description;
+    }
+
+    private async Task SaveEditSubCategory()
+    {
+        var sub = Categories?
+            .SelectMany(c => c.SubCategories ?? new())
+            .FirstOrDefault(s => s.Id == editSubCategoryId);
+        if (sub == null) return;
+        sub.Title = editSubCategoryTitle;
+        sub.Description = editSubCategoryDescription;
+        await SubCategoryService.UpdateAsync(sub);
+        CancelEditSubCategory();
+        await LoadCategories();
+    }
+
+    private void CancelEditSubCategory()
+    {
+        editSubCategoryId = null;
+        editSubCategoryTitle = "";
+        editSubCategoryDescription = "";
+    }
+
+    private async Task DeleteSubCategory(int id)
+    {
+        await SubCategoryService.DeleteAsync(id);
+        await LoadCategories();
+    }
+}

@@ -1,0 +1,100 @@
+﻿@page "/Account/Register"
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Identity
+@using Domain.Models
+@inject UserManager<ApplicationUser> UserManager
+@inject SignInManager<ApplicationUser> SignInManager
+@inject NavigationManager NavigationManager
+
+<PageTitle>Registrera dig</PageTitle>
+
+<h2>Registrera dig</h2>
+
+@if (identityErrors != null)
+{
+    <div class="alert alert-danger">
+        @foreach (var error in identityErrors)
+        {
+            <p>@error.Description</p>
+        }
+    </div>
+}
+
+<EditForm Model="Input" OnValidSubmit="RegisterUser" FormName="register">
+    <DataAnnotationsValidator />
+    <div class="mb-3">
+        <label>Förnamn</label>
+        <InputText class="form-control" @bind-Value="Input.FirstName" />
+    </div>
+    <div class="mb-3">
+        <label>Efternamn</label>
+        <InputText class="form-control" @bind-Value="Input.LastName" />
+    </div>
+    <div class="mb-3">
+        <label>Användarnamn</label>
+        <InputText class="form-control" @bind-Value="Input.UserName" />
+    </div>
+    <div class="mb-3">
+        <label>Email</label>
+        <InputText class="form-control" @bind-Value="Input.Email" />
+    </div>
+    <div class="mb-3">
+        <label>Lösenord</label>
+        <InputText type="password" class="form-control" @bind-Value="Input.Password" />
+    </div>
+    <div class="mb-3">
+        <label>Bekräfta lösenord</label>
+        <InputText type="password" class="form-control" @bind-Value="Input.ConfirmPassword" />
+    </div>
+    <button class="btn btn-primary">Registrera</button>
+</EditForm>
+
+@code {
+    private IEnumerable<IdentityError>? identityErrors;
+
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = new();
+
+    private async Task RegisterUser()
+    {
+        var user = new ApplicationUser
+        {
+            FirstName = Input.FirstName,
+            LastName = Input.LastName,
+            UserName = Input.UserName,
+            Email = Input.Email,
+            ImagePath = "",
+            EmailConfirmed = true
+
+        };
+
+        var result = await UserManager.CreateAsync(user, Input.Password);
+        if (!result.Succeeded)
+        {
+            identityErrors = result.Errors;
+            return;
+        }
+
+        await SignInManager.SignInAsync(user, false);
+        NavigationManager.NavigateTo("/");
+    }
+
+    public class InputModel
+    {
+        [Required]
+        public string FirstName { get; set; } = "";
+        [Required]
+        public string LastName { get; set; } = "";
+        [Required]
+        public string UserName { get; set; } = "";
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; } = "";
+        [Required]
+        [MinLength(6)]
+        public string Password { get; set; } = "";
+        [Required]
+        [Compare(nameof(Password), ErrorMessage = "Lösenorden matchar inte.")]
+        public string ConfirmPassword { get; set; } = "";
+    }
+}

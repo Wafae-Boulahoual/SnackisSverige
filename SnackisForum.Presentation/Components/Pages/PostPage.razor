@@ -1,5 +1,6 @@
 ﻿@page "/post/{Id:int}"
 @rendermode InteractiveServer
+@using Application.Services
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Identity
 @using Application.Interfaces
@@ -8,11 +9,11 @@
 @inject IPostServices PostService
 @inject ICommentServices CommentService
 @inject IReportServices ReportService
+@inject PostServiceApi PostServiceApi
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
 <PageTitle>@post?.Title</PageTitle>
-<ForumHeader />
 <div class="container mt-4">
 
     @if (post == null)

@@ -1,0 +1,78 @@
+﻿@page "/subcategory/{Id:int}"
+@rendermode InteractiveServer
+@using Microsoft.AspNetCore.Components.Authorization
+@using Application.Interfaces
+@using Domain.Models
+@inject ISubCategoryServices SubCategoryService
+@inject IPostServices PostService
+@inject IPostServiceApi PostServiceApi
+@inject AuthenticationStateProvider AuthStateProvider
+
+<PageTitle>@subCategory?.Title</PageTitle>
+
+<h2>@subCategory?.Title</h2>
+<p class="text-muted">@subCategory?.Description</p>
+<hr />
+
+<AuthorizeView>
+    <Authorized>
+        <a href="/createpost/@Id" class="btn btn-primary mb-3">Skapa nytt inlägg</a>
+    </Authorized>
+    <NotAuthorized>
+        <p><a href="/Account/Login">Logga in</a> för att skapa ett inlägg.</p>
+    </NotAuthorized>
+</AuthorizeView>
+
+@if (posts == null)
+{
+    <p>Laddar inlägg...</p>
+}
+else if (posts.Count == 0)
+{
+    <p>Inga inlägg finns ännu.</p>
+}
+else
+{
+    @foreach (var post in posts)
+    {
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5><a href="/post/@post.Id" class="text-decoration-none">@post.Title</a></h5>
+                <p class="text-muted small">
+                    @post.User?.UserName — @post.DatePublication.ToString("yyyy-MM-dd")
+                </p>
+                @if (IsAdmin)
+                {
+                    <button class="btn btn-sm btn-danger" @onclick="() => DeletePost(post.Id)">
+                        Ta bort
+                    </button>
+                }
+            </div>
+        </div>
+    }
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private SubCategory? subCategory;
+    private List<Post>? posts;
+    private bool IsAdmin;
+
+    protected override async Task OnInitializedAsync()
+    {
+        subCategory = await SubCategoryService.GetByIdAsync(Id);
+        posts = await PostServiceApi.GetBySubCategoryIdAsync(Id);
+
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        IsAdmin = authState.User.Identity?.Name == "mariorossi";
+    }
+
+
+
+    private async Task DeletePost(int postId)
+    {
+        await PostService.DeleteAsync(postId);
+        posts = await PostServiceApi.GetBySubCategoryIdAsync(Id);
+    }
+}

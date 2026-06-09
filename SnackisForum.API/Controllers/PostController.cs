@@ -1,4 +1,5 @@
 ﻿using Application.Interfaces;
+using Domain.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -14,24 +15,15 @@ namespace API.Controllers
             _postServices= postServices;
         }
         [HttpGet("discussion/{subCategoryId}")]
-        public async Task<IActionResult> GetPostByDiscussion (int subCategoryId)
+        public async Task<List<Post>> GetPostByDiscussion(int subCategoryId)
         {
-            var posts = await _postServices.GetBySubCategoryIdAsync(subCategoryId);
+            return await _postServices.GetBySubCategoryIdAsync(subCategoryId);
+        }
 
-            if (posts == null || !posts.Any())
-            {
-                return NotFound("Nessun post trovato per questa discussione.");
-            }
-
-            var result = posts.Select(p => new
-            {
-                p.Title,
-                p.Description,
-                p.DatePublication,
-                AuthorName = p.User != null ? $"{p.User.FirstName} {p.User.LastName}" : "Anonimo"
-            });
-
-            return Ok(result);
+        [HttpGet("{id}")]
+        public async Task<Post?> GetById(int id)
+        {
+            return await _postServices.GetByIdAsync(id);
         }
     }
 }

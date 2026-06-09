@@ -13,36 +13,36 @@ namespace SnackisForum.API
     {
         public static void Main(string[] args)
         {
-            var builder = WebApplication.CreateBuilder(args);
+            //var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddControllers();
-            builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            //builder.Services.AddControllers();
+            //builder.Services.AddEndpointsApiExplorer();
+            //builder.Services.AddSwaggerGen();
 
-            // DbContext — samma connection string som Presentation
-            builder.Services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("MyConnectionString")));
+            //// DbContext — samma connection string som Presentation
+            //builder.Services.AddDbContext<ApplicationDbContext>(options =>
+            //    options.UseSqlServer(builder.Configuration.GetConnectionString("MyConnectionString")));
 
-            // Repositories
-            builder.Services.AddScoped<IPostRepository, PostRepository>();
-            builder.Services.AddScoped<ICommentRepository, CommentRepository>();
+            //// Repositories
+            //builder.Services.AddScoped<IPostRepository, PostRepository>();
+            //builder.Services.AddScoped<ICommentRepository, CommentRepository>();
 
-            // Services
-            builder.Services.AddScoped<IPostServices, PostServices>();
-            builder.Services.AddScoped<ICommentServices, CommentServices>();
+            //// Services
+            //builder.Services.AddScoped<IPostServices, PostServices>();
+            //builder.Services.AddScoped<ICommentServices, CommentServices>();
 
-            var app = builder.Build();
+            //var app = builder.Build();
 
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
+            //if (app.Environment.IsDevelopment())
+            //{
+            //    app.UseSwagger();
+            //    app.UseSwaggerUI();
+            //}
 
-            app.UseHttpsRedirection();
-            app.UseAuthorization();
-            app.MapControllers();
-            app.Run();
+            //app.UseHttpsRedirection();
+            //app.UseAuthorization();
+            //app.MapControllers();
+            //app.Run();
         }
     }
 }
