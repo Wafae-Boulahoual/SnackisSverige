@@ -70,29 +70,3 @@ else
     }
 }
 
-@code {
-    private List<Message> receivedMessages = new();
-    private List<Message> sentMessages = new();
-
-    protected override async Task OnInitializedAsync()
-    {
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var user = await UserManager.GetUserAsync(authState.User);
-        if (user == null) return;
-
-        receivedMessages = await MessageService.GetByReceiverIdAsync(user.Id);
-        sentMessages = await MessageService.GetBySenderIDAsync(user.Id);
-    }
-
-    private async Task MarkAsRead(Message message)
-    {
-        message.IsRead = true;
-        await MessageService.UpdateAsync(message);
-
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var user = await UserManager.GetUserAsync(authState.User);
-        if (user == null) return;
-
-        receivedMessages = await MessageService.GetByReceiverIdAsync(user.Id);
-    }
-}

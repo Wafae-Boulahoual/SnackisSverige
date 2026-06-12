@@ -32,39 +32,3 @@
 <button class="btn btn-primary" @onclick="CreatePostAsync">Publicera</button>
 <a class="btn btn-secondary ms-2" href="/subcategory/@SubCategoryId">Avbryt</a>
 
-@code {
-    [Parameter] public int SubCategoryId { get; set; }
-
-    private string title = "";
-    private string description = "";
-    private string errorMessage = "";
-
-    private async Task CreatePostAsync()
-    {
-        if (string.IsNullOrWhiteSpace(title) || string.IsNullOrWhiteSpace(description))
-        {
-            errorMessage = "Fyll i alla fält.";
-            return;
-        }
-
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var user = await UserManager.GetUserAsync(authState.User);
-        if (user == null) 
-        { 
-            errorMessage = "Du måste vara inloggad.";
-            return; 
-        }
-
-        var post = new Post
-        {
-            Title = title,
-            Description = description,
-            UserId = user.Id,
-            DatePublication = DateTime.Now,
-            SubCategoryId = SubCategoryId
-        };
-
-        await PostService.AddAsync(post);
-        Navigation.NavigateTo($"/subcategory/{SubCategoryId}");
-    }
-}

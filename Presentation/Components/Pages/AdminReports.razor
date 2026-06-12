@@ -59,37 +59,4 @@ else
     }
 }
 
-@code {
-    private List<Report>? reports;
 
-    protected override async Task OnInitializedAsync()
-    {
-        reports = await ReportService.GetAllAsync();
-    }
-
-    private async Task MarkReviewed(Report report)
-    {
-        await ReportService.MarkAsReviewedAsync(report.Id);
-        reports = await ReportService.GetAllAsync();
-    }
-
-    private async Task DeletePost(Report report)
-    {
-        if (report.PostId == null) return;
-        await PostService.DeleteAsync(report.PostId.Value);
-        await ReportService.MarkAsReviewedAsync(report.Id);
-        reports = await ReportService.GetAllAsync();
-    }
-
-    private async Task DeleteComment(Report report)
-    {
-        if (report.CommentId == null) return;
-        var allReports = await ReportService.GetAllAsync();
-        foreach (var r in allReports.Where(r => r.CommentId == report.CommentId))
-        {
-            await ReportService.DeleteAsync(r.Id);
-        }
-        await CommentService.DeleteAsync(report.CommentId.Value);
-        reports = await ReportService.GetAllAsync();
-    }
-}

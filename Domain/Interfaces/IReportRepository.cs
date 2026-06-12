@@ -10,9 +10,9 @@ namespace Domain.Interfaces
     public interface IReportRepository
     {
         Task AddAsync(Report report);
-        Task UpdateAsync(Report report); // uppdatera när admin läser den
+        Task UpdateAsync(Report report); 
         Task DeleteAsync(int id);
-        Task <Report?> GetByIdAsync(int id); // för att kunna deleta den
+        Task <Report?> GetByIdAsync(int id); 
         Task<List<Report>> GetAllAsync();
     }
 }

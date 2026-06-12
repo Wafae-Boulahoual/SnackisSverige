@@ -13,7 +13,6 @@ namespace Domain.Models
         public string UserId { get; set; }
         public ApplicationUser User { get; set; }
         public int PostId { get; set; }
-        [JsonIgnore]
         public Post Post { get; set; }
         public DateTime DateAnswer { get; set; }
         public string Text { get; set; }
