@@ -62,7 +62,7 @@ else
                 }
             </div>
 
-            @* Formulär för att redigera kategori *@
+            @* Formulär för edit kategori *@
             @if (IsAdmin && editCategoryId == category.Id)
             {
                 <div class="card-body border-bottom">
@@ -73,7 +73,7 @@ else
                 </div>
             }
 
-            @* Formulär för att skapa ny subkategori *@
+            @* Formulär för create ny subkategori *@
             @if (IsAdmin && createSubCategoryForCategoryId == category.Id)
             {
                 <div class="card-body border-bottom">
@@ -132,22 +132,22 @@ else
     private List<Category>? Categories;
     private bool IsAdmin;
 
-    // Variabler för att skapa ny kategori
+    // Create kategorier
     private bool showCreateCategory = false;
     private string newCategoryTitle = "";
     private string newCategoryDescription = "";
 
-    // Variabler för att redigera kategori
+    // Update kategori
     private int? editCategoryId = null;
     private string editCategoryTitle = "";
     private string editCategoryDescription = "";
 
-    // Variabler för att skapa ny subkategori
+    // Create en ny subkategori
     private int? createSubCategoryForCategoryId = null;
     private string newSubCategoryTitle = "";
     private string newSubCategoryDescription = "";
 
-    // Variabler för att redigera subkategori
+    // Update subkategori
     private int? editSubCategoryId = null;
     private string editSubCategoryTitle = "";
     private string editSubCategoryDescription = "";
@@ -215,7 +215,8 @@ else
 
     private async Task CreateSubCategory(int categoryId)
     {
-        if (string.IsNullOrWhiteSpace(newSubCategoryTitle)) return;
+        if (string.IsNullOrWhiteSpace(newSubCategoryTitle)) 
+        return;
         var sub = new SubCategory { Title = newSubCategoryTitle, Description = newSubCategoryDescription, CategoryId = categoryId };
         await SubCategoryService.AddAsync(sub);
         newSubCategoryTitle = "";

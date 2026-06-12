@@ -49,7 +49,11 @@
 
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = await UserManager.GetUserAsync(authState.User);
-        if (user == null) { errorMessage = "Du måste vara inloggad."; return; }
+        if (user == null) 
+        { 
+            errorMessage = "Du måste vara inloggad.";
+            return; 
+        }
 
         var post = new Post
         {

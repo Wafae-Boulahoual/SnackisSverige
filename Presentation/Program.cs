@@ -57,13 +57,12 @@ namespace Presentation
             });
 
             builder.Services.AddControllers()
-                .AddJsonOptions(options =>
-                {
-                    options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
-                    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
-                });
-
-            // Repositories
+            .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.ReferenceHandler =
+                    System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+            });
+            // DI för Repo
             builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
             builder.Services.AddScoped<ISubCategoryRepository, SubCategoryRepository>();
             builder.Services.AddScoped<IPostRepository, PostRepository>();
@@ -71,7 +70,7 @@ namespace Presentation
             builder.Services.AddScoped<IReportRepository, ReportRepository>();
             builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 
-            // Services
+            // DI för Services
             builder.Services.AddScoped<ICategoryServices, CategoryServices>();
             builder.Services.AddScoped<ISubCategoryServices, SubCategoryServices>();
             builder.Services.AddScoped<IPostServices, PostServices>();

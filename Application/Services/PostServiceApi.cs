@@ -12,12 +12,10 @@ namespace Application.Services
         {
             _client = client.CreateClient("SnackisAPI");
         }
-
-        private static readonly JsonSerializerOptions _options = new JsonSerializerOptions
+        private readonly JsonSerializerOptions _options = new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true
         };
-
         public async Task<Post?> GetByIdAsync(int id)
         {
             HttpResponseMessage response = await _client.GetAsync($"api/Post/{id}");
@@ -36,9 +34,10 @@ namespace Application.Services
             if (response.IsSuccessStatusCode)
             {
                 string responseString = await response.Content.ReadAsStringAsync();
-                posts = JsonSerializer.Deserialize<List<Post>>(responseString, _options) ?? new();
+                posts = JsonSerializer.Deserialize<List<Post>>(responseString, _options);
             }
             return posts;
         }
+    
     }
 }
